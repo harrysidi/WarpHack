@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math/rand/v2"
 )
 
 type DungeonLevel struct {
@@ -11,11 +12,12 @@ type DungeonLevel struct {
 	seed   uint64
 }
 
-func GenerateDungeon(dungeonSeed uint64, width int, height int) *DungeonLevel {
+func GenerateLevel(dungeonSeed uint64, width int, height int) *DungeonLevel {
 
+	fmt.Print("Generating dungeon with seed: ", dungeonSeed, "\n")
 	level := DungeonLevel{
-		Width:  64,
-		Height: 64,
+		Width:  width,
+		Height: height,
 		Cells:  make([][]uint16, 64),
 		seed:   dungeonSeed,
 	}
@@ -28,14 +30,22 @@ func GenerateDungeon(dungeonSeed uint64, width int, height int) *DungeonLevel {
 		}
 	}
 
+	rng := rand.New(rand.NewPCG(dungeonSeed, uint64(dungeonSeed/2+1)))
+
 	for y := 0; y < level.Height; y++ {
 		for x := 0; x < level.Width; x++ {
-			fmt.Printf("%d", level.Cells[x][y])
+			if x == 0 || x == level.Width-1 || y == 0 || y == level.Height-1 {
+				level.Cells[x][y] = 1 // Wall
+			} else {
+				if rng.IntN(100) < 20 { // 20% chance to place a wall
+					level.Cells[x][y] = 1 // Wall
+				} else {
+					level.Cells[x][y] = 0 // Floor
+				}
+			}
 		}
-		fmt.Println()
 	}
 
-	fmt.Print("Generating dungeon with seed: ", dungeonSeed, "\n")
 	return &level
 
 }
